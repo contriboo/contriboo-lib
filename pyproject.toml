@@ -5,7 +5,7 @@ description = "Library for assessment of the contribution of developers on GitHu
 readme = "README.md"
 authors = [
   { name = "alchemmist", email = "anton.ingrish@gmail.com" },
-  { name = "Alex Smirnov" },
+  { name = "Alex Smirnov", email = "alekssmir411@gmail.com" },
   { name = "vitawild" },
 ]
 requires-python = ">=3.12"
