@@ -9,8 +9,15 @@ authors = [
   { name = "vitawild" },
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+  "requests>=2.32.0",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
