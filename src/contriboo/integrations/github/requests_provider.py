@@ -1,5 +1,6 @@
 import datetime
 import time
+from typing import TypeAlias
 
 import requests
 
@@ -15,6 +16,12 @@ from contriboo.profile.types import DaysRange
 from contriboo.repository_name import RepositoryName
 
 from .dto import GitHubCommitSearchResponseDTO
+
+RequestScalar: TypeAlias = str | bytes | int | float
+RequestValue: TypeAlias = (
+    RequestScalar | list[RequestScalar] | tuple[RequestScalar, ...] | None
+)
+RequestParams: TypeAlias = dict[str, RequestValue]
 
 
 class GitHubProvider(ProfileRepositoryProvider):
@@ -81,12 +88,12 @@ class GitHubProvider(ProfileRepositoryProvider):
     def _search_commits_page(
         self,
         path: str,
-        params: dict[str, object],
+        params: RequestParams,
     ) -> GitHubCommitSearchResponseDTO:
         raw_payload = self._get_json(path=path, params=params)
         return GitHubCommitSearchResponseDTO.model_validate(raw_payload)
 
-    def _get_json(self, path: str, params: dict[str, object]) -> dict[str, object]:
+    def _get_json(self, path: str, params: RequestParams) -> dict[str, object]:
         url = f"{self._base_url}{path}"
         headers = {
             "Accept": "application/vnd.github+json",

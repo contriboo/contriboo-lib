@@ -1,11 +1,15 @@
 from pathlib import Path
 
+from pytest import MonkeyPatch
+
 from contriboo.exceptions import GitOperationError
 from contriboo.integrations.git.gateway import GitGateway
 from contriboo.repository_name import RepositoryName
 
 
-def test_clone_repository_calls_git_clone(monkeypatch, tmp_path: Path) -> None:
+def test_clone_repository_calls_git_clone(
+    monkeypatch: MonkeyPatch, tmp_path: Path
+) -> None:
     commands: list[list[str]] = []
 
     def fake_run(self: GitGateway, command: list[str], cwd: Path | None = None) -> str:
@@ -21,7 +25,9 @@ def test_clone_repository_calls_git_clone(monkeypatch, tmp_path: Path) -> None:
     assert commands[0][:4] == ["git", "clone", "--filter=blob:none", "--no-checkout"]
 
 
-def test_iter_commit_signatures_parses_expected_format(monkeypatch) -> None:
+def test_iter_commit_signatures_parses_expected_format(
+    monkeypatch: MonkeyPatch,
+) -> None:
     def fake_run(self: GitGateway, command: list[str], cwd: Path | None = None) -> str:
         if command[:3] == ["git", "rev-parse", "--verify"]:
             return "ok"

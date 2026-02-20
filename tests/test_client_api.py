@@ -1,6 +1,8 @@
 from pathlib import Path
+from typing import cast
 
 from contriboo import ContribooClient, ContribooSettings
+from contriboo.profile.service import ProfileAnalysisService
 
 
 class FakeService:
@@ -8,8 +10,8 @@ class FakeService:
 
 
 def test_client_uses_injected_profile_service() -> None:
-    fake_service = FakeService()
-    client = ContribooClient(profile_service=fake_service)  # type: ignore[arg-type]
+    fake_service = cast(ProfileAnalysisService, FakeService())
+    client = ContribooClient(profile_service=fake_service)
     assert client.profile is fake_service
 
 

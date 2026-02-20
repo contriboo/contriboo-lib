@@ -19,6 +19,10 @@ dependencies = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/contriboo"]
+include = ["src/contriboo/py.typed"]
+
 [dependency-groups]
 dev = [
   "mypy>=1.19.1",

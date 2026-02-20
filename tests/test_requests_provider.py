@@ -1,7 +1,16 @@
+from typing import TypedDict, cast
+
 import requests
 
 from contriboo.exceptions import GitHubRateLimitError
 from contriboo.integrations.github.requests_provider import GitHubProvider
+
+
+class SessionCall(TypedDict):
+    url: str
+    headers: dict[str, str]
+    params: dict[str, object]
+    timeout: int
 
 
 class FakeResponse:
@@ -17,7 +26,10 @@ class FakeResponse:
 
     def raise_for_status(self) -> None:
         if self.status_code >= 400:
-            raise requests.HTTPError("http error", response=self)
+            raise requests.HTTPError(
+                "http error",
+                response=cast(requests.Response, self),
+            )
 
     def json(self) -> dict[str, object]:
         return self._payload
@@ -25,7 +37,7 @@ class FakeResponse:
 
 class FakeSession:
     def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[SessionCall] = []
 
     def get(
         self, url: str, headers: dict[str, str], params: dict[str, object], timeout: int
@@ -55,7 +67,7 @@ def test_find_repositories_for_author_deduplicates() -> None:
         retries=3,
         retry_delay_sec=0,
         max_search_pages=20,
-        session=session,
+        session=cast(requests.Session, session),
     )
 
     repositories = provider.find_repositories_for_author(username="octocat", days=10)
@@ -77,12 +89,13 @@ def test_find_repositories_for_author_supports_all_period() -> None:
         retries=1,
         retry_delay_sec=0,
         max_search_pages=2,
-        session=session,
+        session=cast(requests.Session, session),
     )
 
     provider.find_repositories_for_author(username="octocat", days="all")
 
-    query = str(session.calls[0]["params"]["q"])
+    first_params = session.calls[0]["params"]
+    query = str(first_params["q"])
     assert query == "author:octocat"
     assert "committer-date" not in query
 
@@ -111,7 +124,7 @@ def test_find_repositories_for_author_handles_rate_limit() -> None:
         retries=1,
         retry_delay_sec=0,
         max_search_pages=1,
-        session=RateSession(),
+        session=cast(requests.Session, RateSession()),
     )
 
     try:
