@@ -1,3 +1,3 @@
-from .subprocess_gateway import SubprocessGitHistoryGateway
+from .gateway import GitGateway
 
-__all__ = ["SubprocessGitHistoryGateway"]
+__all__ = ["GitGateway"]

@@ -1,3 +1,3 @@
-from .requests_provider import RequestsGitHubProfileRepositoryProvider
+from .requests_provider import GitHubProvider
 
-__all__ = ["RequestsGitHubProfileRepositoryProvider"]
+__all__ = ["GitHubProvider"]

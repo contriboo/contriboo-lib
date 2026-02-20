@@ -18,4 +18,4 @@ if __name__ == "__main__":
         show_progress=True,
     )
 
-    print(f"Total commits by {username} for last {days} days: {result.total_commits}")
+    print(f"Total commits by {username} for period={days}: {result.total_commits}")

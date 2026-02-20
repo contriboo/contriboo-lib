@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+from .exceptions import ContribooConfigurationError
+
 
 @dataclass(frozen=True, slots=True)
 class ContribooSettings:
@@ -14,12 +16,12 @@ class ContribooSettings:
 
     def __post_init__(self) -> None:
         if self.http_timeout_sec <= 0:
-            raise ValueError("http_timeout_sec must be > 0")
+            raise ContribooConfigurationError("http_timeout_sec must be > 0")
         if self.http_retries <= 0:
-            raise ValueError("http_retries must be > 0")
+            raise ContribooConfigurationError("http_retries must be > 0")
         if self.http_retry_delay_sec < 0:
-            raise ValueError("http_retry_delay_sec must be >= 0")
+            raise ContribooConfigurationError("http_retry_delay_sec must be >= 0")
         if self.git_timeout_sec <= 0:
-            raise ValueError("git_timeout_sec must be > 0")
+            raise ContribooConfigurationError("git_timeout_sec must be > 0")
         if self.max_search_pages <= 0:
-            raise ValueError("max_search_pages must be > 0")
+            raise ContribooConfigurationError("max_search_pages must be > 0")

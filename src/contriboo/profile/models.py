@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
+from contriboo.repository_name import RepositoryName
+
 
 @dataclass(frozen=True, slots=True)
 class CommitSignature:
@@ -13,7 +15,7 @@ class CommitSignature:
 
 @dataclass(frozen=True, slots=True)
 class RepositoryCommitCount:
-    full_name: str
+    full_name: RepositoryName
     branch: str | None
     commit_count: int
     status: Literal["ok", "skipped"]
