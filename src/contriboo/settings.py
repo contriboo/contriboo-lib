@@ -6,6 +6,18 @@ from .exceptions import ContribooConfigurationError
 
 @dataclass(frozen=True, slots=True)
 class ContribooSettings:
+    """Configuration container for contriboo runtime behavior.
+
+    Attributes:
+        github_token: Optional GitHub token used for authenticated API calls.
+        http_timeout_sec: Timeout for GitHub HTTP requests in seconds.
+        http_retries: Number of retry attempts for transient HTTP errors.
+        http_retry_delay_sec: Delay between retry attempts in seconds.
+        git_timeout_sec: Timeout for git CLI commands in seconds.
+        max_search_pages: Max number of GitHub commit-search pages to read.
+        workspace_dir: Optional directory for temporary clone workspace.
+    """
+
     github_token: str | None = None
     http_timeout_sec: int = 30
     http_retries: int = 3
@@ -15,6 +27,11 @@ class ContribooSettings:
     workspace_dir: Path | None = None
 
     def __post_init__(self) -> None:
+        """Validate settings values after dataclass initialization.
+
+        Raises:
+            ContribooConfigurationError: If any numeric setting is out of valid range.
+        """
         if self.http_timeout_sec <= 0:
             raise ContribooConfigurationError("http_timeout_sec must be > 0")
         if self.http_retries <= 0:

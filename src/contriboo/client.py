@@ -5,6 +5,8 @@ from contriboo.settings import ContribooSettings
 
 
 class ContribooClient:
+    """Public entrypoint for contriboo services."""
+
     __slots__ = ("_settings", "_profile_service")
 
     def __init__(
@@ -12,6 +14,12 @@ class ContribooClient:
         settings: ContribooSettings | None = None,
         profile_service: ProfileAnalysisService | None = None,
     ) -> None:
+        """Initialize client with settings and optional injected profile service.
+
+        Args:
+            settings: Runtime settings for integrations and timeouts.
+            profile_service: Prebuilt profile service instance for custom wiring/tests.
+        """
         self._settings = settings or ContribooSettings()
 
         if profile_service is not None:
@@ -34,4 +42,9 @@ class ContribooClient:
 
     @property
     def profile(self) -> ProfileAnalysisService:
+        """Return profile-analysis service.
+
+        Returns:
+            ProfileAnalysisService: Service for developer profile analysis use-cases.
+        """
         return self._profile_service

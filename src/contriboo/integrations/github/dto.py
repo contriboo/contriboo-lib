@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 
 
 class GitHubUserDTO(BaseModel):
+    """GitHub user object from commit-search response."""
+
     login: str | None = None
     id: int | None = None
     node_id: str | None = None
@@ -24,6 +26,8 @@ class GitHubUserDTO(BaseModel):
 
 
 class GitHubLicenseDTO(BaseModel):
+    """Repository license block from commit-search response."""
+
     key: str | None = None
     name: str | None = None
     spdx_id: str | None = None
@@ -32,6 +36,8 @@ class GitHubLicenseDTO(BaseModel):
 
 
 class GitHubPermissionsDTO(BaseModel):
+    """Repository permissions block for current actor."""
+
     admin: bool | None = None
     maintain: bool | None = None
     push: bool | None = None
@@ -40,6 +46,8 @@ class GitHubPermissionsDTO(BaseModel):
 
 
 class GitHubRepositoryDTO(BaseModel):
+    """Repository object embedded into commit-search item."""
+
     id: int | None = None
     node_id: str | None = None
     name: str | None = None
@@ -136,17 +144,23 @@ class GitHubRepositoryDTO(BaseModel):
 
 
 class GitCommitTreeDTO(BaseModel):
+    """Tree pointer object from git commit payload."""
+
     sha: str | None = None
     url: str | None = None
 
 
 class GitCommitIdentityDTO(BaseModel):
+    """Author/committer identity block from git commit payload."""
+
     name: str | None = None
     email: str | None = None
     date: str | None = None
 
 
 class GitCommitVerificationDTO(BaseModel):
+    """Commit signature verification metadata."""
+
     verified: bool | None = None
     reason: str | None = None
     signature: str | None = None
@@ -155,6 +169,8 @@ class GitCommitVerificationDTO(BaseModel):
 
 
 class GitCommitDTO(BaseModel):
+    """`commit` block from commit-search item."""
+
     url: str | None = None
     author: GitCommitIdentityDTO | None = None
     committer: GitCommitIdentityDTO | None = None
@@ -165,12 +181,16 @@ class GitCommitDTO(BaseModel):
 
 
 class GitCommitParentDTO(BaseModel):
+    """Parent commit reference from commit-search item."""
+
     url: str | None = None
     html_url: str | None = None
     sha: str | None = None
 
 
 class GitHubCommitSearchItemDTO(BaseModel):
+    """Single commit-search result item."""
+
     url: str | None = None
     sha: str | None = None
     node_id: str | None = None
@@ -185,6 +205,8 @@ class GitHubCommitSearchItemDTO(BaseModel):
 
 
 class GitHubCommitSearchResponseDTO(BaseModel):
+    """Top-level response DTO for `GET /search/commits`."""
+
     total_count: int | None = None
     incomplete_results: bool | None = None
     items: list[GitHubCommitSearchItemDTO] = Field(default_factory=list)

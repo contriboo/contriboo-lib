@@ -25,6 +25,8 @@ RequestParams: TypeAlias = dict[str, RequestValue]
 
 
 class GitHubProvider(ProfileRepositoryProvider):
+    """GitHub repository provider based on `requests` client."""
+
     __slots__ = (
         "_token",
         "_base_url",
@@ -45,6 +47,17 @@ class GitHubProvider(ProfileRepositoryProvider):
         session: requests.Session | None = None,
         base_url: str = "https://api.github.com",
     ) -> None:
+        """Initialize provider.
+
+        Args:
+            token: Optional GitHub token for authenticated requests.
+            timeout_sec: Timeout for HTTP requests in seconds.
+            retries: Number of retry attempts for transient errors.
+            retry_delay_sec: Delay between retries in seconds.
+            max_search_pages: Max commit-search pages to read.
+            session: Optional preconfigured requests session.
+            base_url: GitHub API base URL.
+        """
         self._token = token
         self._base_url = base_url.rstrip("/")
         self._timeout_sec = timeout_sec
@@ -56,6 +69,15 @@ class GitHubProvider(ProfileRepositoryProvider):
     def find_repositories_for_author(
         self, username: str, days: DaysRange
     ) -> list[RepositoryName]:
+        """Return unique repositories where author has activity.
+
+        Args:
+            username: GitHub username used in search query.
+            days: Positive day count or `"all"` for full history.
+
+        Returns:
+            list[RepositoryName]: Unique repository identifiers.
+        """
         query = self._build_query(username=username, days=days)
 
         repositories: dict[RepositoryName, bool] = {}
@@ -75,6 +97,18 @@ class GitHubProvider(ProfileRepositoryProvider):
         return list(repositories.keys())
 
     def _build_query(self, username: str, days: DaysRange) -> str:
+        """Build GitHub commit-search query string.
+
+        Args:
+            username: GitHub username.
+            days: Positive day count or `"all"`.
+
+        Returns:
+            str: Search query for GitHub commits endpoint.
+
+        Raises:
+            InvalidDaysRangeError: If `days` value is invalid.
+        """
         if days == "all":
             return f"author:{username}"
         if isinstance(days, bool) or days <= 0:
@@ -90,10 +124,34 @@ class GitHubProvider(ProfileRepositoryProvider):
         path: str,
         params: RequestParams,
     ) -> GitHubCommitSearchResponseDTO:
+        """Fetch and parse one page of commit-search response.
+
+        Args:
+            path: API path part.
+            params: Query parameters for request.
+
+        Returns:
+            GitHubCommitSearchResponseDTO: Parsed page DTO.
+        """
         raw_payload = self._get_json(path=path, params=params)
         return GitHubCommitSearchResponseDTO.model_validate(raw_payload)
 
     def _get_json(self, path: str, params: RequestParams) -> dict[str, object]:
+        """Perform GET request and return JSON object payload.
+
+        Args:
+            path: API path part.
+            params: Query parameters for request.
+
+        Returns:
+            dict[str, object]: Decoded JSON object.
+
+        Raises:
+            GitHubResponseSchemaError: If response JSON is not an object.
+            GitHubApiError: If request fails with non-rate-limit HTTP error.
+            GitHubConnectionError: If network/DNS failures persist after retries.
+            GitHubRateLimitError: If hard rate-limit was reached.
+        """
         url = f"{self._base_url}{path}"
         headers = {
             "Accept": "application/vnd.github+json",
@@ -133,6 +191,17 @@ class GitHubProvider(ProfileRepositoryProvider):
         raise GitHubApiError("GitHub API request failed")
 
     def _handle_rate_limit(self, exc: requests.HTTPError) -> bool:
+        """Handle GitHub rate-limit HTTP error.
+
+        Args:
+            exc: HTTPError raised by `requests`.
+
+        Returns:
+            bool: `True` when request should be retried, otherwise `False`.
+
+        Raises:
+            GitHubRateLimitError: If reset wait time is too long for local retry.
+        """
         response = exc.response
         if response is None:
             return False

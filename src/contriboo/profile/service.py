@@ -11,6 +11,8 @@ from .types import DaysRange
 
 
 class ProfileAnalysisService:
+    """Application service for developer-profile commit analytics."""
+
     __slots__ = ("_repository_provider", "_git_gateway", "_workspace_dir")
 
     def __init__(
@@ -19,6 +21,13 @@ class ProfileAnalysisService:
         git_gateway: GitHistoryGateway,
         workspace_dir: Path | None = None,
     ) -> None:
+        """Create profile analysis service.
+
+        Args:
+            repository_provider: Provider that returns profile-related repositories.
+            git_gateway: Gateway for git clone/history operations.
+            workspace_dir: Optional directory for temporary clone workspace.
+        """
         self._repository_provider = repository_provider
         self._git_gateway = git_gateway
         self._workspace_dir = workspace_dir
@@ -30,6 +39,17 @@ class ProfileAnalysisService:
         days: DaysRange,
         show_progress: bool = False,
     ) -> ProfileCommitCountResult:
+        """Count total commits for one developer profile.
+
+        Args:
+            username: Username used for repository discovery and signature matching.
+            email: Optional email used for signature matching.
+            days: Positive day count or `"all"` for full history.
+            show_progress: Flag to print progress lines during processing.
+
+        Returns:
+            ProfileCommitCountResult: Aggregated and per-repository counting result.
+        """
         self._validate_days(days)
         started_at = datetime.datetime.now(datetime.UTC)
 
@@ -58,6 +78,17 @@ class ProfileAnalysisService:
         normalized_email: str,
         show_progress: bool,
     ) -> list[RepositoryCommitCount]:
+        """Scan all repositories and collect per-repository results.
+
+        Args:
+            repositories: Repositories to clone and inspect.
+            normalized_username: Lowercased username for signature matching.
+            normalized_email: Lowercased email for signature matching.
+            show_progress: Flag to print progress lines.
+
+        Returns:
+            list[RepositoryCommitCount]: One result entry per repository.
+        """
         results: list[RepositoryCommitCount] = []
 
         with tempfile.TemporaryDirectory(
@@ -93,6 +124,20 @@ class ProfileAnalysisService:
         total: int,
         show_progress: bool,
     ) -> RepositoryCommitCount:
+        """Process one repository and return result entry.
+
+        Args:
+            repository_name: Repository identifier to process.
+            target_root: Root directory for temporary repository clones.
+            normalized_username: Lowercased username for signature matching.
+            normalized_email: Lowercased email for signature matching.
+            index: 1-based repository index for progress output.
+            total: Total number of repositories for progress output.
+            show_progress: Flag to print progress lines.
+
+        Returns:
+            RepositoryCommitCount: Result record for this repository.
+        """
         try:
             repo_dir = self._git_gateway.clone_repository(repository_name, target_root)
             branch = self._git_gateway.resolve_mainline_branch(repo_dir)
@@ -139,6 +184,17 @@ class ProfileAnalysisService:
         normalized_username: str,
         normalized_email: str,
     ) -> int:
+        """Count matching commits inside one local repository branch.
+
+        Args:
+            repo_dir: Local repository path.
+            branch: Branch name used for commit history traversal.
+            normalized_username: Lowercased username for signature matching.
+            normalized_email: Lowercased email for signature matching.
+
+        Returns:
+            int: Number of commits matching by email or username.
+        """
         commit_count = 0
         for signature in self._git_gateway.iter_commit_signatures(repo_dir, branch):
             matches_email = normalized_email and (
@@ -164,6 +220,16 @@ class ProfileAnalysisService:
         repositories: list[RepositoryName],
         repo_results: list[RepositoryCommitCount],
     ) -> ProfileCommitCountResult:
+        """Build final aggregate result from per-repository records.
+
+        Args:
+            started_at: UTC timestamp when operation started.
+            repositories: Input repositories list used for scanning.
+            repo_results: Per-repository outcomes.
+
+        Returns:
+            ProfileCommitCountResult: Final aggregate result object.
+        """
         finished_at = datetime.datetime.now(datetime.UTC)
         total_commits = sum(item.commit_count for item in repo_results)
         repos_skipped = sum(1 for item in repo_results if item.status == "skipped")
@@ -178,6 +244,14 @@ class ProfileAnalysisService:
         )
 
     def _empty_result(self, started_at: datetime.datetime) -> ProfileCommitCountResult:
+        """Build empty aggregate result when no repositories found.
+
+        Args:
+            started_at: UTC timestamp when operation started.
+
+        Returns:
+            ProfileCommitCountResult: Empty result object with zero counters.
+        """
         finished_at = datetime.datetime.now(datetime.UTC)
         return ProfileCommitCountResult(
             total_commits=0,
@@ -189,9 +263,26 @@ class ProfileAnalysisService:
         )
 
     def _normalize_identity(self, username: str, email: str | None) -> tuple[str, str]:
+        """Normalize username/email for case-insensitive matching.
+
+        Args:
+            username: Raw username value.
+            email: Raw email value or `None`.
+
+        Returns:
+            tuple[str, str]: Normalized `(username, email)` values.
+        """
         return username.strip().lower(), (email or "").strip().lower()
 
     def _validate_days(self, days: DaysRange) -> None:
+        """Validate period argument.
+
+        Args:
+            days: Positive day count or `"all"`.
+
+        Raises:
+            InvalidDaysRangeError: If value is neither `"all"` nor positive integer.
+        """
         if days == "all":
             return
         if isinstance(days, bool) or not isinstance(days, int) or days <= 0:
