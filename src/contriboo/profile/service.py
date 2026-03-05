@@ -82,6 +82,48 @@ class ProfileAnalysisService:
             show_progress=show_progress,
         )
         return self._build_result(started_at, repositories, repo_results)
+        
+    def pull_requests_total(
+        self,
+        username: str,
+        email: str | None,
+        days: DaysRange,
+        *,
+        show_progress: bool = False,
+    ) -> ProfileCommitCountResult:
+        """
+        Count total pull requests for one profile per repository
+        Args
+            username: Username used for repository discovery and signature matching.
+
+            days: Positive day count or `"all"` for full history.
+            show_progress: Flag to print progress lines during processing.
+
+        Returns:
+            ProfileCommitCountResult: Aggregated and per-repository counting result.
+
+        """
+        self._validate_days(days)
+        started_at = datetime.datetime.now(datetime.UTC)
+
+        repositories = self._repository_provider.find_repositories_for_author(
+            username=username,
+            days=days,
+        )
+        if not repositories:
+            return self._empty_result(started_at)
+
+        normalized_username, normalized_email = self._normalize_identity(
+            username,
+            email,
+        )
+        repo_results = self._scan_repositories(
+            repositories=repositories,
+            normalized_username=normalized_username,
+            normalized_email=normalized_email,
+            show_progress=show_progress,
+        )
+        return self._build_result(started_at, repositories, repo_results)
 
     def _scan_repositories(
         self,
