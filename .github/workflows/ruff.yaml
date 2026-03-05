@@ -2,10 +2,13 @@ name: ruff
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   quality:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v6
