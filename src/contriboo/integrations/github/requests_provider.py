@@ -240,3 +240,43 @@ class GitHubProvider(ProfileRepositoryProvider):
             return True
 
         raise GitHubRateLimitError.exceeded(wait_seconds)
+    def _pull_requests_total(self, username: str, days: int) -> int:
+        """Amount of sent and merged pull requests for every repo or in total for last n days.
+
+        Args: 
+            username: The name of the user.
+            days: number of the last n days.
+
+        Returns:
+            int: number of PRs.
+
+        Raises:
+            GitHubRateLimitError: If reset wait time is too long for local retry.
+        """
+
+        repos = self.find_repositories_for_author(username, days)
+        pr_total = 0
+
+        since = (
+            datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
+        ).date()
+
+        for repo in repos:
+        url = f"/repos/{repo.full_name}/pulls"
+        param = {"state": "all", "per_page": 101}
+
+        while url:
+            list_of_prs = self._get_json(path=url, params=param)
+            for pr in list_of_prs:
+                if pr.get("created_at") and pr["created_at"] >= since:
+                    total_prs += 1
+                if pr.get("merged_at"):
+                    total_prs += 1
+            url = None
+            params = None
+            
+        return total_prs
+        
+        raise GitHubRateLimitError(
+            f"GitHub rate limit exceeded. Wait about {max(wait_seconds, 0)}s or use token."
+        )
