@@ -240,3 +240,54 @@ class GitHubProvider(ProfileRepositoryProvider):
             return True
 
         raise GitHubRateLimitError.exceeded(wait_seconds)
+    def _pull_requests_total(self, username: str, days: int) -> int:
+        """Amount of sent and merged pull requests for every repo or in total for last n days.
+
+        Args: 
+            username: The name of the user.
+            days: number of the last n days.
+
+        Returns:
+            int: number of PRs.
+
+        Raises:
+            nun yet
+        """
+
+        repos = self.find_repositories_for_author(username, days)
+        total_prs = 0
+
+        since = (
+                datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
+            ).date()
+
+        for repo in repos:
+            url = f"/repos/{repo.full_name}/pulls"
+            params = {"state": "all", "per_page": 100}
+
+            while url:
+                list_of_prs = self._get_json(path=url, params=params)
+
+                for pr in list_of_prs:
+                    created_at = pr.get("created_at")
+                    merged_at = pr.get("merged_at")
+
+                    if created_at:
+                        created_dt = datetime.datetime.fromisoformat(
+                            created_at.replace("Z", "+00:00")
+                        )
+                        if created_dt >= since:
+                            total_prs += 1
+                            continue
+
+                    if merged_at:
+                        merged_dt = datetime.datetime.fromisoformat(
+                            merged_at.replace("Z", "+00:00")
+                        )
+                        if merged_dt >= since:
+                            total_prs += 1
+
+                url = None
+                params = None
+                
+        return total_prs

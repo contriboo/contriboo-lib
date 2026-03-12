@@ -1,5 +1,3 @@
-
-
 import logging
 import os
 
@@ -17,7 +15,8 @@ if __name__ == "__main__":
     email = "octocat@example.com"
     days = 3
 
-    result = client.profile.count_total_commits(
+
+    result = client.profile.pull_requests_total(
         username=username,
         email=email,
         days=days,
@@ -25,8 +24,8 @@ if __name__ == "__main__":
     )
 
     logger.info(
-        "Total commits by %s for period=%s: %s",
+        "Amount of prs %s for %s days: %s",
         username,
         days,
-        result.total_commits,
+        result,
     )
