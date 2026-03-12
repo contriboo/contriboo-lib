@@ -106,7 +106,7 @@ class ProfileAnalysisService:
         self._validate_days(days)
         started_at = datetime.datetime.now(datetime.UTC)
 
-        return self.repository_provider.pull_requests_total
+        return self._repository_provider._pull_requests_total
 
     def _scan_repositories(
         self,

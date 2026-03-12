@@ -261,9 +261,9 @@ class GitHubProvider(ProfileRepositoryProvider):
             datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
         ).date()
 
-        #for repo in repos:
-        #url = f"/repos/{repo.full_name}/pulls"
-        #param = {"state": "all", "per_page": 100}
+        for repo in repos:
+            url = f"/repos/{repo.full_name}/pulls"
+            param = {"state": "all", "per_page": 100}
 
         while url:
             list_of_prs = self._get_json(path=url, params=param)

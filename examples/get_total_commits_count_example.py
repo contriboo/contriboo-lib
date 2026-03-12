@@ -14,6 +14,7 @@ if __name__ == "__main__":
     client = ContribooClient(settings=settings)
 
     username = "octocat"
+    email = "octocat@example.com"
     days = 3
 
     result = client.profile.count_total_commits(
