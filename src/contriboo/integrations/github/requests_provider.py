@@ -251,32 +251,43 @@ class GitHubProvider(ProfileRepositoryProvider):
             int: number of PRs.
 
         Raises:
-            GitHubRateLimitError: If reset wait time is too long for local retry.
+            nun yet
         """
 
         repos = self.find_repositories_for_author(username, days)
         total_prs = 0
 
         since = (
-            datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
-        ).date()
+                datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
+            ).date()
 
         for repo in repos:
             url = f"/repos/{repo.full_name}/pulls"
-            param = {"state": "all", "per_page": 100}
+            params = {"state": "all", "per_page": 100}
 
-        while url:
-            list_of_prs = self._get_json(path=url, params=param)
-            for pr in list_of_prs:
-                if pr.get("created_at") and pr["created_at"] >= since:
-                    total_prs += 1
-                if pr.get("merged_at"):
-                    total_prs += 1
-            url = None
-            params = None
-            
+            while url:
+                list_of_prs = self._get_json(path=url, params=params)
+
+                for pr in list_of_prs:
+                    created_at = pr.get("created_at")
+                    merged_at = pr.get("merged_at")
+
+                    if created_at:
+                        created_dt = datetime.datetime.fromisoformat(
+                            created_at.replace("Z", "+00:00")
+                        )
+                        if created_dt >= since:
+                            total_prs += 1
+                            continue
+
+                    if merged_at:
+                        merged_dt = datetime.datetime.fromisoformat(
+                            merged_at.replace("Z", "+00:00")
+                        )
+                        if merged_dt >= since:
+                            total_prs += 1
+
+                url = None
+                params = None
+                
         return total_prs
-        
-        raise GitHubRateLimitError(
-            f"GitHub rate limit exceeded. Wait about {max(wait_seconds, 0)}s or use token."
-        )
