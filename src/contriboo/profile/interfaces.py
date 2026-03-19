@@ -46,6 +46,10 @@ class ProfileRepositoryProvider(Protocol):
         """
         ...
 
+    def count_pull_requests_total(self, username: str)-> int:
+        """Amount of sent and merged pull requests for every repo
+        """
+        ...
 
 class GitHistoryGateway(Protocol):
     """Contract for git-history operations over repositories."""

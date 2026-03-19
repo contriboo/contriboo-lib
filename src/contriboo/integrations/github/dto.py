@@ -213,3 +213,17 @@ class GitHubCommitSearchResponseDTO(BaseModel):
     total_count: int | None = None
     incomplete_results: bool | None = None
     items: list[GitHubCommitSearchItemDTO] = Field(default_factory=list)
+
+class GitHubPullRequestDTO(BaseModel):
+    merged_at: str | None
+
+class GitHubIssueSearchResultDTO(BaseModel):
+    pull_request: GitHubPullRequestDTO
+    created_at: str
+
+class GitHubSearchPullRequestsDTO(BaseModel):
+    items: list[GitHubIssueSearchResultDTO]
+
+
+
+
