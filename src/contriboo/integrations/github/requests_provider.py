@@ -16,7 +16,7 @@ from contriboo.profile.interfaces import ProfileRepositoryProvider
 from contriboo.profile.types import DaysRange
 from contriboo.repository_name import RepositoryName
 
-from .dto import GitHubCommitSearchResponseDTO, GitHubUserDTO
+from .dto import GitHubCommitSearchResponseDTO, GitHubUserDTO, GitHubSearchPullRequestsDTO
 
 type RequestScalar = str | bytes | int | float
 type RequestValue = (
@@ -256,3 +256,48 @@ class GitHubProvider(ProfileRepositoryProvider):
             return True
 
         raise GitHubRateLimitError.exceeded(wait_seconds)
+
+    def count_pull_requests_total(self, username: str, days: int) -> int:
+        """
+        Amount of sent and merged pull requests for every repo
+         or in total for last n days.
+
+        Args:
+            username: The name of the user.
+            days: number of the last n days.
+
+        Returns:
+            int: number of PRs.
+
+        Raises:
+            nun yet
+
+        """
+        total_prs = 0
+        
+        url = (
+                f"/search/issues?q=author:{username}+type:pr"
+            )
+
+        list_of_prs = GitHubSearchPullRequestsDTO.model_validate(self._get_json(path=url,
+            params={"state": "all", "per_page": 100}))
+
+        return len(list_of_prs.items)
+
+        for pr in list_of_prs.items:
+            created_at = pr.created_at
+            merged_at = pr.pull_request.merged_at
+
+            if created_at:
+                created_dt = datetime.datetime.fromisoformat(created_at)
+                if created_dt:
+                    total_prs += 1
+                    continue
+
+            if merged_at:
+                merged_dt = datetime.datetime.fromisoformat(merged_at)
+                if merged_dt:
+                    total_prs += 1
+
+        return total_prs
+        
