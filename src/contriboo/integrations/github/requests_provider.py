@@ -122,6 +122,59 @@ class GitHubProvider(ProfileRepositoryProvider):
         )
         return raw_payload.followers
 
+    def count_writed_lines_codes(self, username: str, days: int) -> int:
+        """
+        Count the number of lines written at last n-days.
+
+        Args:
+            username: The username of the user.
+            days: The number of days it takes to find the written lines of code.
+
+        Returns:
+            int: Count of lines written at last n-days.
+
+        """
+        query = self._build_query(username=username, days=days)
+        total_lines = 0
+
+        for page in range(1, self._max_search_pages + 1):
+            dto = self._search_commits_page(
+                "/search/commits",
+                params={"q": query, "per_page": 100, "page": page},
+            )
+            if not dto.items:
+                break
+
+        for item in dto.items:
+            if item.sha and item.repository and item.repository.full_name:
+                commit_stats = self._get_commit_stats(
+                    repo_full_name=item.repository.full_name,
+                    sha=item.sha,
+                )
+                total_lines += commit_stats
+
+        return total_lines
+
+    def _get_commit_stats(self, repo_full_name: str, sha: str) -> int:
+        """
+        Fetch commit statistics (additions + deletions) for a specific commit.
+
+        Args:
+            repo_full_name: Repository full name (owner/repo).
+            sha: Commit SHA.
+
+        Returns:
+            int: Total lines changed (additions + deletions).
+
+        """
+        path = f"/repos/{repo_full_name}/commits/{sha}"
+        raw_payload = self._get_json(path=path, params={})
+
+        additions = raw_payload.get("additions", 0) or 0
+        deletions = raw_payload.get("deletions", 0) or 0
+
+        return additions + deletions
+
     def _build_query(self, username: str, days: DaysRange) -> str:
         """
         Build GitHub commit-search query string.

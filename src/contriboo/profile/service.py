@@ -97,6 +97,19 @@ class ProfileAnalysisService:
         """
         return self._repository_provider.count_followers(username)
 
+    def count_writed_lines_codes(self, username: str, days: int) -> int:
+        """
+        Count the number of lines written at last n-days.
+
+        Args:
+            username: The username of the user.
+            days: The number of days it takes to find the written lines of code.
+
+        Returns:
+            int: Count of lines written at last n-days.
+        """
+        return self._repository_provider.count_writed_lines_codes(username, days)
+
     def _scan_repositories(
         self,
         repositories: list[RepositoryName],

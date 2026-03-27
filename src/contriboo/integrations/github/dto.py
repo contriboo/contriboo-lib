@@ -146,6 +146,15 @@ class GitHubRepositoryDTO(BaseModel):
     license: GitHubLicenseDTO | None = None
 
 
+class GitHubCommitStatsDTO(BaseModel):
+    """Commit statistics with line changes."""
+
+    additions: int | None = None
+    deletions: int | None = None
+    changes: int | None = None
+    total_lines: int | None = None
+
+
 class GitCommitTreeDTO(BaseModel):
     """Tree pointer object from git commit payload."""
 
