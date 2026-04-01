@@ -1,7 +1,7 @@
 # Contriboo
 
 <div style="text-align: center;">
-    <img src="assets/logo.png" alt="лого" width="300" height="300">
+    <img src="assets/1773837701536.png" alt="лого" width="300" height="300">
 </div>
 <div style="text-align: center;">
  <img alt="GitHub Created At" src="https://img.shields.io/github/created-at/contriboo/contriboo-lib">
